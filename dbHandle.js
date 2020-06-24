@@ -5,14 +5,8 @@ var index;
  
 // 데이터베이스 생성 및 오픈
 function openDB(){
-   if (!window.openDatabase) {
-      document.write("이 Browser 는 Web SQL Database 를 지원하지 않습니다.");
-      return false;
-   } else{
-      db = window.openDatabase('coronaDB', '1.0', '코로나DB', 1024*1024); 
-      console.log('1_DB 생성...'); 
-   }
-      
+   db = window.openDatabase('coronaDB', '1.0', '코로나DB', 1024*1024); 
+   console.log('1_DB 생성...'); 
 } 
 // 테이블 생성 트랜잭션 실행
 function createTable() {
