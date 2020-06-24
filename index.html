@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <meta charset="utf-8" />
+   <meta name="viewport" content="initial-scale=1.0, width=device-width">
+   <title>코로나 위험지역 관리사이트</title>
+
+
+   <!-- 사용자 테마 적용 파일-->
+   <link rel="stylesheet" href="corona.min.css">
+   <link rel="stylesheet" href="jquery.mobile.icons.min.css">
+   <!-- 제이쿼리 모바일, 제이쿼리 라이브러리 파일 -->
+   <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+   <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+   <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+   <!-- 사용자 정의 자바스크립트 파일 -->
+   <script src="dbHandle.js"></script>
+   <script>
+      $(document).ready(function () {
+         // DB 연결
+         openDB();
+         createTable();
+         // 이벤트 함수 정의
+         /* 추가 페이지 */
+         $('#submit1').click(function () {
+            insertPlace();
+         });
+         $('#cancel1').click(function () {
+            $('#dangerOption').val('미정').attr('selected', 'selected');
+            $('#dangerOption').selectmenu('refresh');
+         });
+         /* 목록 페이지 */
+         $('.list-place').click(function () {
+            listPlaces();
+         })
+         $('#order').change(function(){
+            listPlaces();
+         })
+         $('#search2').click(function(){
+            searchPlaces();
+         })
+         $('#submit4').click(function(){
+            updatePlace();
+         })
+      });    
+   </script>
+   <style type="text/css">
+      #main-content {
+         text-align: center;
+      }
+
+      #img-main {
+         width: 65%;
+         height: 65%;
+         margin-bottom: 15px;
+         border-radius: 15px;
+      }
+
+      .gap {
+         padding-top: 15px;
+         padding-bottom: 30px;
+      }
+   </style>
+</head>
+
+<body>
+
+   <!-- 시작 화면 -->
+   <div data-role="page" id="page0">
+      <div data-role="header" data-position="fixed" data-theme="a">
+         <h2>코로나 위험지역 관리</h2>
+         <a href="#page0" data-icon="home" data-iconpos="notext" class="ui-btn-right">Home</a>
+      </div>
+      <div data-role="content" id="main-content">
+         <img src="corona.jpg" id="img-main">
+         <ul data-role="listview" data-inset="true">
+            <li><a href="#page1" data-icon="plus">위험 지역 추가</a></li>
+            <li><a href="#page2" data-icon="edit" class="list-place">위험 지역 목록</a></li>
+            <li><a href="#page3" data-icon="search">위험 지역 검색 + 수정</a></li>
+         </ul>
+
+      </div>
+      <div data-role="footer" data-position="fixed" data-theme="a">
+         <h4>CORONA DANGER PLACES</h4>
+      </div>
+   </div>
+
+   <!-- 코로나 위험지역 추가 화면 -->
+   <div data-role="page" id="page1">
+      <div data-role="header" data-position="fixed" data-theme="a">
+         <a href="#" data-icon="back" data-rel="back" data-direction="reverse">뒤로</a>
+         <h1>코로나 위험지역</h1>
+         <a href="#page0" data-icon="home" data-iconpos="notext">Home</a>
+         <div data-role="navbar">
+            <ul>
+               <li><a href="#page1">추가</a></li>
+               <li><a href="#page2" class="list-place">목록</a></li>
+               <li><a href="#page3">검색 + 수정</a></li>
+            </ul>
+         </div>
+      </div>
+      <div data-role="content">
+         <form name="form1">
+            <h3>코로나 위험지역 입력</h3>
+            <div class="ui-body ui-body-a gap">
+               <label for="dangerOption1" class="select">위험정도</label>
+               <select name="dangerOption1" id="dangerOption1" data-native-menu="false" data-mini="true"
+                  data-inline="true">
+                  <option value="미정">선택하세요</option>
+                  <option value="안전함">안전함</option>
+                  <option value="주의요함">주의요함</option>
+                  <option value="경고">경고</option>
+                  <option value="매우위험">매우위험</option>
+               </select>
+               <label for="address1">주소(ex 서울시 구로 콜센터)</label>
+               <input type="text" name="address1" id="address1" value="" data-mini="true" />
+               <label for="date1">확진자 방문날짜(ex 20200620)</label>
+               <input type="text" name="date1" id="date1" value="" data-mini="true" />
+               <label for="content1">내용</label>
+               <input type="text" name="content1" id="content1" value="" data-mini="true" />
+            </div>
+            <div class="ui-body">
+               <fieldset class="ui-grid-a">
+                  <div class="ui-block-a">
+                     <input type="reset" id="cancel1" value="취소" />
+                  </div>
+                  <div class="ui-block-b">
+                     <input type="button" id="submit1" value="추가" />
+                  </div>
+               </fieldset>
+            </div>
+         </form>
+      </div>
+      <div data-role="footer" data-position="fixed" data-theme="a">
+         <h4>CORONA DANGER PLACES</h4>
+      </div>
+   </div>
+   <!-- 위험지역 목록 화면 -->
+   <div data-role="page" id="page2">
+      <div data-role="header" data-position="fixed" data-theme="a">
+         <a href="#" data-icon="back" data-rel="back" data-direction="reverse">Back</a>
+         <h1>코로나 위험지역</h1>
+         <a href="#page0" data-icon="home" data-iconpos="notext">Home</a>
+         <div data-role="navbar">
+            <ul>
+               <li><a href="#page1">추가</a></li>
+               <li><a href="#page2" class="list-place">목록</a></li>
+               <li><a href="#page3">검색 + 수정</a></li>
+            </ul>
+         </div>
+      </div>
+      <div data-role="content" data-theme="a">
+         <form name="form2">
+            <h3>위험 지역 목록</h3>
+            <div class="ui-body ui-body-a gap">
+               <label for="order" class="select">정렬방식</label>
+               <select name="order" id="order" data-native-menu="false" data-mini="true" data-inline="true">
+                  <option value="no">선택</option>
+                  <option value="ASC">오랜된순</option>
+                  <option value="DESC">최신순</option>
+               </select>
+               <ul data-role="listview" data-inset="true" id="corona-list1">
+                  
+               </ul>
+            </div>
+         </form>
+      </div>
+      <div data-role="footer" data-position="fixed" data-theme="a">
+         <h4>CORONA DANGER PLACES</h4>
+      </div>
+   </div>
+   <!-- 위험지역 검색+수정 화면 -->
+   <div data-role="page" id="page3">
+      <div data-role="header" data-position="fixed" data-theme="a">
+         <a href="#" data-icon="back" data-rel="back" data-direction="reverse">Back</a>
+         <h1>코로나 위험지역</h1>
+         <a href="#page0" data-icon="home" data-iconpos="notext">Home</a>
+         <div data-role="navbar">
+            <ul>
+               <li><a href="#page1">추가</a></li>
+               <li><a href="#page2" class="list-place">목록</a></li>
+               <li><a href="#page3">검색 + 수정</a></li>
+            </ul>
+         </div>
+      </div>
+      <div data-role="content" data-theme="a">
+         <form name="form2">
+            <h3>위험 지역 검색</h3>
+            <label for="address2">주소(ex 콜센터)</label>
+            <input type="text" name="address2" id="address2" value="" data-mini="true" />
+            <div class="ui-body">
+               <ul data-role="listview" data-inset="true" id="corona-list2">
+                  
+               </ul>
+               <fieldset class="ui-grid-a">
+                  <div class="ui-block-a">
+                      <input type="reset" id="cancel2" value="취소"/>
+                  </div>
+                  <div class="ui-block-b">
+                      <input type="button" id="search2" value="검색"/>
+                  </div>
+               </fieldset>
+            </div>
+         </form>
+      </div>
+      <div data-role="footer" data-position="fixed" data-theme="a">
+         <h4>CORONA DANGER PLACES</h4>
+      </div>
+   </div>
+   <!-- 코로나 위험지역 수정 화면 -->
+   <div data-role="page" id="page4">
+      <div data-role="header" data-position="fixed" data-theme="a">
+         <a href="#" data-icon="back" data-rel="back" data-direction="reverse">뒤로</a>
+         <h1>코로나 위험지역</h1>
+         <a href="#page0" data-icon="home" data-iconpos="notext">Home</a>
+         <div data-role="navbar">
+            <ul>
+               <li><a href="#page1">추가</a></li>
+               <li><a href="#page2" class="list-place">목록</a></li>
+               <li><a href="#page3">검색 + 수정</a></li>
+            </ul>
+         </div>
+      </div>
+      <div data-role="content">
+         <form name="form1">
+            <h3>코로나 위험지역 수정</h3>
+            <div class="ui-body ui-body-a gap">
+               <label for="dangerOption4" class="select">위험정도</label>
+               <select name="dangerOption4" id="dangerOption4" data-native-menu="false" data-mini="true"
+                  data-inline="true">
+                  <option value="미정">선택하세요</option>
+                  <option value="안전함">안전함</option>
+                  <option value="주의요함">주의요함</option>
+                  <option value="경고">경고</option>
+                  <option value="매우위험">매우위험</option>
+               </select>
+               <label for="address4">주소(ex 서울시 구로 콜센터)</label>
+               <input type="text" name="address4" id="address4" value="" data-mini="true" readonly/>
+               <label for="date4">확진자 방문날짜(ex 20200620)</label>
+               <input type="text" name="date4" id="date4" value="" data-mini="true" />
+               <label for="content4">내용</label>
+               <input type="text" name="content4" id="content4" value="" data-mini="true" />
+            </div>
+            <div class="ui-body">
+               <fieldset class="ui-grid-a">
+                  <div class="ui-block-a">
+                     <input type="reset" id="cancel4" value="취소" />
+                  </div>
+                  <div class="ui-block-b">
+                     <input type="button" id="submit4" value="수정" />
+                  </div>
+               </fieldset>
+            </div>
+         </form>
+      </div>
+      <div data-role="footer" data-position="fixed" data-theme="a">
+         <h4>CORONA DANGER PLACES</h4>
+      </div>
+   </div>
+</body>
+
+</html>
